@@ -1,0 +1,26 @@
+{
+    "logs": [
+        {
+            "outputFile": "C:\\Users\\Mohammed\\AndroidStudioProjects\\AudioVideoAudioRecording\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Mohammed\\AndroidStudioProjects\\AudioVideoAudioRecording\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "2,5,4,6,3",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "55,249,182,314,117",
+                        "endColumns": "61,64,66,62,64",
+                        "endOffsets": "112,309,244,372,177"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "55,117,182,249,312",
+                        "endColumns": "61,64,66,62,64",
+                        "endOffsets": "112,177,244,307,372"
+                    }
+                }
+            ]
+        }
+    ]
+}
