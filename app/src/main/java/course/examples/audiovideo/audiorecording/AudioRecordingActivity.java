@@ -2,18 +2,23 @@ package course.examples.audiovideo.audiorecording;
 
 import java.io.IOException;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class AudioRecordingActivity extends Activity {
@@ -21,17 +26,25 @@ public class AudioRecordingActivity extends Activity {
 	private static final String mFileName = Environment
 			.getExternalStorageDirectory().getAbsolutePath()
 			+ "/audiorecordtest.3gp";
-	private MediaRecorder mRecorder;
+    private static final int PERMISSIONS_REQUEST_AUDIO_RECORD = 1;
+    private static final int PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 2;
+    private boolean mRecordPermissionGranted = true;
+    private boolean mStoragePermissionGranted = true;
+    private MediaRecorder mRecorder;
 	private MediaPlayer mPlayer;
 	private AudioManager mAudioManager;
-
+    ToggleButton mRecordButton;
+    ToggleButton mPlayButton;
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 
-		final ToggleButton mRecordButton = (ToggleButton) findViewById(R.id.record_button);
-		final ToggleButton mPlayButton = (ToggleButton) findViewById(R.id.play_button);
+		mRecordButton = (ToggleButton) findViewById(R.id.record_button);
+		mPlayButton = (ToggleButton) findViewById(R.id.play_button);
+
+		//live record permission check method
+        ensureRecordPermissions();
 
 		// Set up record Button
 		mRecordButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -171,16 +184,95 @@ public class AudioRecordingActivity extends Activity {
 	public void onPause() {
 		super.onPause();
 
-//		if (null != mRecorder) {
-//			mRecorder.release();
-//			mRecorder = null;
-//		}
-//
-//		if (null != mPlayer) {
-//			mPlayer.release();
-//			mPlayer = null;
-//		}
+		if (null != mRecorder) {
+			mRecorder.release();
+			mRecorder = null;
+		}
+
+		if (null != mPlayer) {
+			mPlayer.release();
+			mPlayer = null;
+		}
 
 	}
+
+    private void ensureRecordPermissions() {
+
+        // Check whether we don't already have granted a record permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Since we don't granted permission, request permission from user
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    PERMISSIONS_REQUEST_AUDIO_RECORD);
+            //nothing to do more, wait for response, till that disable
+            // ability for using that feature
+            mRecordButton.setEnabled(false);
+            mPlayButton.setEnabled(false);
+            mRecordPermissionGranted = false;
+        }
+
+        // Check whether we don't already have granted a file-write permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Since we don't granted permission, request permission from user
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
+            //nothing to do more, wait for response, till that disable
+            // ability for using that feature
+            mRecordButton.setEnabled(false);
+            mPlayButton.setEnabled(false);
+            mStoragePermissionGranted= false;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode){
+            case PERMISSIONS_REQUEST_AUDIO_RECORD: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! we can use it,
+                    mRecordPermissionGranted =true;
+
+                } else {
+
+                    // permission denied, boo! We should keep the functionality
+                    // disabled.. We also my inform user
+                    Toast.makeText(getApplicationContext(),"Sorry, you have to give us permission !",
+                            Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+
+            case PERMISSIONS_REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! we can use it,
+                    mStoragePermissionGranted = true;
+
+                } else {
+
+                    // permission denied, boo! We should keep the functionality
+                    // disabled.. We also my inform user
+                    Toast.makeText(getApplicationContext(),"Sorry, you have to give us permission !",
+                            Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+        }
+        if (mRecordPermissionGranted && mStoragePermissionGranted){
+            mRecordButton.setEnabled(true);
+            mPlayButton.setEnabled(true);
+        }
+    }
 
 }
